@@ -13,7 +13,7 @@
  ***************************************************************/
 #include "ICM_20948.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 
-// #define USE_SPI       // Uncomment this to use SPI
+//#define USE_SPI       // Uncomment this to use SPI
 
 #define SERIAL_PORT Serial
 
@@ -33,25 +33,9 @@ ICM_20948_I2C myICM; // Otherwise create an ICM_20948_I2C object
 
 // gyro offset values for calibration
 long gyro[3] = {0};
-int offset_count = 500;  // average this many values for gyro
-int acc_mag_count = 300; // collect this many values for acc/mag calibration
-void printRawAGMT(ICM_20948_AGMT_t agmt)
-{
-  SERIAL_PORT.print(agmt.acc.axes.x);
-  SERIAL_PORT.print(", ");
-  SERIAL_PORT.print(agmt.acc.axes.y);
-  SERIAL_PORT.print(", ");
-  SERIAL_PORT.print(agmt.acc.axes.z);
-  SERIAL_PORT.print(", ");
+int offset_count = 500; //average this many values for gyro
+int acc_mag_count = 300; //collect this many values for acc/mag calibration
 
-  SERIAL_PORT.print(agmt.mag.axes.x);
-  SERIAL_PORT.print(", ");
-  SERIAL_PORT.print(agmt.mag.axes.y);
-  SERIAL_PORT.print(", ");
-  SERIAL_PORT.print(agmt.mag.axes.z);
-
-  SERIAL_PORT.println();
-}
 void setup()
 {
 
@@ -67,7 +51,7 @@ void setup()
   WIRE_PORT.setClock(400000);
 #endif
 
-  // myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
+  //myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
 
   bool initialized = false;
   while (!initialized)
@@ -98,19 +82,17 @@ void setup()
   float goff;
   int i;
 
-  for (i = 0; i < offset_count; i++)
-  {
+  for (i = 0; i < offset_count; i++) {
     if (myICM.dataReady())
     {
-      myICM.getAGMT(); // The values are only updated when you call 'getAGMT'
+      myICM.getAGMT();         // The values are only updated when you call 'getAGMT'
       gyro[0] += myICM.agmt.gyr.axes.x;
       gyro[1] += myICM.agmt.gyr.axes.y;
       gyro[2] += myICM.agmt.gyr.axes.z;
     }
-  } // done with gyro
+  } //done with gyro
   SERIAL_PORT.print("Gyro offsets x, y, z: ");
-  for (i = 0; i < 3; i++)
-  {
+  for (i = 0; i < 3; i++) {
     goff = (float)gyro[i] / offset_count;
     SERIAL_PORT.print(goff, 1);
     SERIAL_PORT.print(", ");
@@ -122,20 +104,37 @@ void setup()
   SERIAL_PORT.println(F("Starting..."));
 
   // get values for calibration of acc/mag
-  for (i = 0; i < acc_mag_count; i++)
-  {
+  for (i = 0; i < acc_mag_count; i++) {
     if (myICM.dataReady())
     {
-      myICM.getAGMT();          // The values are only updated when you call 'getAGMT'
-      printRawAGMT(myICM.agmt); // raw values, taken directly from the agmt structure
+      myICM.getAGMT();         // The values are only updated when you call 'getAGMT'
+      printRawAGMT( myICM.agmt );     // raw values, taken directly from the agmt structure
       delay(200);
     }
     else
     {
-      delay(100); // wait for data ready
+      delay(100); //wait for data ready
     }
   }
   SERIAL_PORT.print(F("Done collecting"));
 }
 
 void loop() {}
+
+void printRawAGMT(ICM_20948_AGMT_t agmt)
+{
+  SERIAL_PORT.print(agmt.acc.axes.x);
+  SERIAL_PORT.print(", ");
+  SERIAL_PORT.print(agmt.acc.axes.y);
+  SERIAL_PORT.print(", ");
+  SERIAL_PORT.print(agmt.acc.axes.z);
+  SERIAL_PORT.print(", ");
+
+  SERIAL_PORT.print(agmt.mag.axes.x);
+  SERIAL_PORT.print(", ");
+  SERIAL_PORT.print(agmt.mag.axes.y);
+  SERIAL_PORT.print(", ");
+  SERIAL_PORT.print(agmt.mag.axes.z);
+
+  SERIAL_PORT.println();
+}
